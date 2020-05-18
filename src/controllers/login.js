@@ -14,18 +14,19 @@ module.exports = (req, res) => {
 
         if(user.active){
 
-            const token = crypto.createHash('sha256')
-                               .update(user.email+secret.key+Date.now())
-                               .digest('base64')
-    
             const validSession = sessions.find(session => session.token === req.cookies.token && session.user === user.email)
-            const expires = new Date(Date.now() +(5000*100))
-    
+
             if(validSession){
         
                 return res.status(200).json({'message': 'token stay valid'})
             }
+
+            const token = crypto.createHash('sha256')
+                               .update(user.email+secret.key+Date.now())
+                               .digest('base64')
     
+            const expires = new Date(Date.now() +(5000*100))
+
             sessions.push({'user': user.email, 'token': token, 'expires': expires})
     
             fs.writeFile(__rootname + '/src/data/sessions.json', JSON.stringify(sessions), err => err? console.error(err): 0)
