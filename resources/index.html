@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="form-user">
+        <label for="input-username">email</label>
+        <input type="email" name="username" id="input-username">
+        <label for="input-secret">secret</label>
+        <input type="password" name="secret" id="input-secret">
+    </form>
+    <button id="button-register">Register me!!</button>
+    <button id="button-login">Login</button>
+    <a href="/admin">Access admin page</a>
+</body>
+<script>
+
+    function getUser(){
+
+        return {
+        
+            email: document.querySelector('#input-username').value,
+            password: btoa(document.querySelector('#input-secret').value)
+        }
+    }
+
+    function genrequestOptions(user){
+
+        return{
+            
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json text/plain */*',
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        }
+    }
+
+    document.querySelector('#button-register').addEventListener('click', e => {
+
+
+        fetch('/register', genrequestOptions(getUser()))
+            .then(res => res.json())
+            .then(json => console.log(json))
+    })
+
+    document.querySelector('#button-login').addEventListener('click', e => {
+
+        fetch('/login', genrequestOptions(getUser()))
+        .then(res => res.json())
+        .then(json => console.log(json))
+    })
+</script>
+</html>
