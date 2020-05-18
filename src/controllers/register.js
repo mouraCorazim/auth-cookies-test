@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 const fs = require('fs')
-const database = require('../data/users.json')
+const users = require('../data/users.json')
 const User = require('../models/User')
 
 module.exports = (req, res) => {
@@ -10,15 +10,15 @@ module.exports = (req, res) => {
 
     if(userEmail && userPassword){
         
-        const userExists = database.find(user => user.email === userEmail)
+        const userExists = users.find(user => user.email === userEmail)
 
         if(!userExists){
 
-            database.push(User(userEmail, userPassword))
+            users.push(User(userEmail, userPassword))
     
-            fs.writeFile(__rootname + '/src/data/users.json', JSON.stringify(database), err => console.error(err))
+            fs.writeFile(__rootname + '/src/data/users.json', JSON.stringify(users), err => err? console.error(err): 0)
     
-            return res.status(200).json({'message': 'User registered'})
+            return res.status(201).json({'message': 'User registered'})
         }
 
         return res.status(403).json({'message': 'User already exists'})
