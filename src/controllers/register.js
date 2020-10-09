@@ -8,21 +8,19 @@ module.exports = (req, res) => {
     const userEmail = req.body.email
     const userPassword = crypto.createHash('sha256').update(req.body.password).digest('base64')
 
-    if(userEmail && userPassword){
+    if(!userEmail || !userPassword){
+        return res.status(400).json({'message': 'missing arguments on request body'})   
+    }
         
-        const userExists = users.find(user => user.email === userEmail)
+    const userExists = users.find(user => user.email === userEmail)
 
-        if(!userExists){
-
-            users.push(User(userEmail, userPassword))
-    
-            fs.writeFile(__rootname + '/src/data/users.json', JSON.stringify(users), err => err? console.error(err): 0)
-    
-            return res.status(201).json({'message': 'User registered'})
-        }
-
+    if(userExists){
         return res.status(403).json({'message': 'User already exists'})
     }
 
-    return res.status(400).json({'message': 'missing arguments on request body'})
+    users.push(User(userEmail, userPassword))
+
+    fs.writeFile(__rootname + '/src/data/users.json', JSON.stringify(users), err => err? console.error(err): 0)
+
+    return res.status(201).json({'message': 'User registered'})
 }
