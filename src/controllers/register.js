@@ -21,7 +21,7 @@ function Register(obj = {}){
         'obj': obj,
         'base': (base) => base? Register({'base': base, ... this.obj}): Register(),
         'of': (data) => data? Register({'data': data, ... this.obj}): Register(),
-        'message': (status) => status? Register({'status': status, ... this.obj}): Register(),
+        'status': (status) => status? Register({'status': status, ... this.obj}): Register(),
         'chain': (fn) => fn? fn(this.obj): Register()
     }
 }
@@ -60,7 +60,7 @@ module.exports = (req, res) => {
     if(userEmail && userPassword && !userExists){
         return Register().of(User(userEmail, userPassword))
                          .base(users)
-                         .message(status(201, "Registered user))
+                         .status(status(201, "Registered user))
                          .chain(registerUser)
     }
 }
