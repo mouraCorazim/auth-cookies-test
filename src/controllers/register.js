@@ -44,6 +44,7 @@ module.exports = (req, res) => {
     }
     
     if(userEmail && userPassword && !userExists){
-        return registerUser(userEmail, userPassword, users, status(201, "Registered user"))
+        const responseStatus = status(201, "Registered user")
+        return registerUser(userEmail, userPassword, users, responseStatus)
     }
 }
