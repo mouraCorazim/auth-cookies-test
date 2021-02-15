@@ -16,35 +16,51 @@ function status(code, message){
             {'status': code, 'message': message} : {}
 }
 
-function registerUser(userEmail, userPassword, users, status){
+function Register(obj = {}){
+    return {
+        'obj': obj,
+        'base': (base) => base? Register({'base': base, ... this.obj}): Register(),
+        'of': (data) => data? Register({'data': data, ... this.obj}): Register(),
+        'message': (status) => status? Register({'status': status, ... this.obj}): Register(),
+        'chain': (fn) => fn? fn(this.obj): Register()
+    }
+}
+
+function registerUser(register){
     const filePath = __rootname + '/src/data/users.json'
-    const data = [...users, User(userEmail, userPassword))]
+    const data = [... register.base, register.data]
     const toWrite = JSON.stringify(data)
     const callback = err => err? console.error(err): console.log("Registered user")
 
     fs.writeFile(filePath, toWrite, callback)
 
-    return res.status(status.code) // 201
-              .json(status.message) // Registered user
+    return res.status(register.status.code) // 201
+              .json(register.status.message) // Registered user
 }
 
 module.exports = (req, res) => {
 
     const userEmail = req.body.email
-    const userPassword = crypto.createHash('sha256').update(req.body.password).digest('base64')
+    const userPassword = crypto.createHash('sha256')
+                               .update(req.body.password)
+                               .digest('base64')
 
     if(!userEmail || !userPassword){
-        return res.status(400).json({'message': 'missing arguments on request body'})   
+        return res.status(400)
+                  .json({'message': 'missing arguments on request body'})   
     }
         
     const userExists = users.find(user => user.email === userEmail)
 
     if(userExists){
-        return res.status(403).json({'message': 'User already exists'})
+        return res.status(403)
+                  .json({'message': 'User already exists'})
     }
     
     if(userEmail && userPassword && !userExists){
-        const responseStatus = status(201, "Registered user")
-        return registerUser(userEmail, userPassword, users, responseStatus)
+        return Register().of(User(userEmail, userPassword))
+                         .base(users)
+                         .message(status(201, "Registered user))
+                         .chain(registerUser)
     }
 }
