@@ -21,31 +21,29 @@ function checkSession(session = false){
 
 function Session(obj = {}){
     return {
-        'obj': obj,
-        'isValid': () => this.obj.token && this.obj.base && this.obj.status,
-        'of': (token) => token? Session({'token': token, ... this.obj}): Session(),
-        'base': (base) => base? Session({'base': base, ... this.obj}): Session(),
-        'status': (status) => status? Session({'status': status, ... this.obj}): Session(),
-        'chain': (fn) => fn && this.isValid()? fn(this.obj): Session()
+        'value': obj,
+        'isValid': () => this.value.token && this.value.base && this.value.status,
+        'of': (token) => token? Session({'token': token, ... this.value}): Session(),
+        'base': (base) => base? Session({'base': base, ... this.value}): Session(),
+        'status': (status) => status? Session({'status': status, ... this.value}): Session(),
+        'chain': (fn) => fn && this.isValid()? fn(this.value): Session()
     }
 }
 
-function closeSession(sessions, status, token){
-    const sessionsPath = __rootname + '/src/data/sessions.json'
-    const persistSessions = sessions.filter(session => session.token !== token)
-    const toWrite = JSON.stringify(persistSessions)
-    const callback = err => err? console.error(err): 0
+function closeSession(res){
+    return function(session){
+        const values = session.value
+        const sessionsPath = __rootname + '/src/data/sessions.json'
+        const persistSessions = values.base.filter(session => session.token !== values.token)
+        const toWrite = JSON.stringify(persistSessions)
+        const callback = err => err? console.error(err): 0
 
-    fs.writeFile(sessionsPath, toWrite, callback)
+        fs.writeFile(sessionsPath, toWrite, callback)
 
-    return res.clearCookie('token')
-              .status(status.code)
-              .json(status.message)
-}
-
-function notSession(status){
-    return res.status(status.code)
-              .json(status.message)
+        return res.clearCookie('token')
+                  .status(values.status.code)
+                  .json(values.status.message)
+    }
 }
 
 module.exports = (req, res) => {
@@ -55,5 +53,11 @@ module.exports = (req, res) => {
     const status = checkSession(session)
     
     return session?
-        closeSession(sessions, status, token): notSession(status)
+        Session().of(token)
+                 .base(sessions)
+                 .status(status)
+                 .chain(closeSession(res))
+        : 
+        res.status(status.code)
+           .json(status.message)
 }
