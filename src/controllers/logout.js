@@ -19,6 +19,17 @@ function checkSession(session = false){
         status(200, "User logout"): status(404, "Not logged User")
 }
 
+function Session(obj = {}){
+    return {
+        'obj': obj,
+        'isValid': () => this.obj.token && this.obj.base && this.obj.status,
+        'of': (token) => token? Session({'token': token, ... this.obj}): Session(),
+        'base': (base) => base? Session({'base': base, ... this.obj}): Session(),
+        'status': (status) => status? Session({'status': status, ... this.obj}): Session(),
+        'chain': (fn) => fn && this.isValid()? fn(this.obj): Session()
+    }
+}
+
 function closeSession(sessions, status, token){
     const sessionsPath = __rootname + '/src/data/sessions.json'
     const persistSessions = sessions.filter(session => session.token !== token)
