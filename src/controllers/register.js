@@ -27,16 +27,18 @@ function Register(obj = {}){
     }
 }
 
-function registerUser(register){
-    const filePath = __rootname + '/src/data/users.json'
-    const data = [... register.value.base, register.value.data]
-    const toWrite = JSON.stringify(data)
-    const callback = err => err? console.error(err): console.log("Registered user")
+function registerUser(res){
+    return function(register){
+        const filePath = __rootname + '/src/data/users.json'
+        const data = [... register.value.base, register.value.data]
+        const toWrite = JSON.stringify(data)
+        const callback = err => err? console.error(err): console.log("Registered user")
 
-    fs.writeFile(filePath, toWrite, callback)
+        fs.writeFile(filePath, toWrite, callback)
 
-    return res.status(register.value.status.code) // 201
-              .json(register.value.status.message) // Registered user
+        return res.status(register.value.status.code) // 201
+                  .json(register.value.status.message) // Registered user
+    }
 }
 
 module.exports = (req, res) => {
@@ -62,6 +64,6 @@ module.exports = (req, res) => {
         return Register().of(User(userEmail, userPassword))
                          .base(users)
                          .status(status(201, "Registered user))
-                         .chain(registerUser)
+                         .chain(registerUser(res))
     }
 }
