@@ -19,10 +19,11 @@ function status(code, message){
 function Register(obj = {}){
     return {
         'obj': obj,
+        'isValid': () => this.base && this.data && this.status
         'base': (base) => base? Register({'base': base, ... this.obj}): Register(),
         'of': (data) => data? Register({'data': data, ... this.obj}): Register(),
         'status': (status) => status? Register({'status': status, ... this.obj}): Register(),
-        'chain': (fn) => fn? fn(this.obj): Register()
+        'chain': (fn) => fn && this.isValid()? fn(this.obj): Register()
     }
 }
 
